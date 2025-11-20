@@ -1,6 +1,6 @@
 name: mobile
 description: "A new Flutter project."
-publish_to: 'none'
+publish_to: "none"
 version: 0.1.0
 
 environment:
@@ -10,6 +10,11 @@ dependencies:
   flutter:
     sdk: flutter
 
+  firebase_core: any
+  firebase_messaging: any
+  http: any
+  flutter_local_notifications: any
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -17,3 +22,5 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  assets:
+    - assets/images/home.jpeg

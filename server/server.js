@@ -1,12 +1,11 @@
 const express = require("express");
-
 const app = express();
-const port = 3000;
+const notificationRoutes = require("./routes/notification");
 
-app.get("/", (req, res) => {
-  res.send("Halo! Ini adalah server Express pertama saya.");
-});
+app.use(express.json());
 
-app.listen(port, () => {
-  console.log(`Server berjalan di http://localhost:${port}`);
+app.use("/api", notificationRoutes);
+
+app.listen(3000, () => {
+  console.log("Server running on port 3000");
 });
