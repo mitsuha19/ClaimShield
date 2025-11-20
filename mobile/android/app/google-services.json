@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "712696120978",
+    "project_id": "claimshield-cb17f",
+    "storage_bucket": "claimshield-cb17f.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:712696120978:android:e228d729b8c955f61e884b",
+        "android_client_info": {
+          "package_name": "com.bpjs.claimshield"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCNB4mlm-xE0acinTKOo__70vNKQ-P4zBk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
