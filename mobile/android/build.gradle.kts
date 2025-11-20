@@ -2,6 +2,10 @@ allprojects {
     repositories {
         google()
         mavenCentral()
+        gradlePluginPortal()
+    }
+    dependencies {
+        classpath("com.google.gms:google-services:4.4.4")
     }
 }
 
