@@ -2,6 +2,7 @@
 const express = require("express");
 const router = express.Router();
 const admin = require("../config/firebase");
+const axios = require("axios");
 
 // POST /api/send-notif
 router.post("/send-notif", async (req, res) => {
@@ -20,7 +21,7 @@ router.post("/send-notif", async (req, res) => {
         title: title || "Hello from ClaimShield",
         body: body || "This is a test notification",
       },
-      data: data || {}, // custom payload yang bisa kamu baca di Flutter
+      data: data || {},
     };
 
     const response = await admin.messaging().send(message);
