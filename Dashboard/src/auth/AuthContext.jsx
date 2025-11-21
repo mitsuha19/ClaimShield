@@ -4,12 +4,22 @@ const AuthContext = createContext();
 const API_URL = "http://localhost:3000/api/users";
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(
-    JSON.parse(localStorage.getItem("user")) || null
-  );
-  const [token, setToken] = useState(localStorage.getItem("token") || null);
+  const [user, setUser] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem("user")) || null;
+    } catch {
+      return null;
+    }
+  });
 
-  // LOGIN API
+  const [token, setToken] = useState(() => {
+    try {
+      return localStorage.getItem("token") || null;
+    } catch {
+      return null;
+    }
+  });
+
   async function login(username, password) {
     try {
       const res = await fetch(`${API_URL}/login`, {
@@ -24,16 +34,16 @@ export function AuthProvider({ children }) {
         return { success: false, message: data.message };
       }
 
-      // Simpan session
       localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify(data.user));
 
-      setToken(data.token);
       setUser(data.user);
+      setToken(data.token);
 
       return { success: true, role: data.user.role };
-    } catch (err) {
-      return { success: false, message: "Server error" };
+
+    } catch {
+      return { success: false, message: "Server error. Please try again." };
     }
   }
 
