@@ -6,3 +6,4 @@ body {
   @apply bg-[#142150] min-h-screen flex items-center justify-center;
   font-family: 'Inter', sans-serif;
 }
+@import "tailwindcss";
