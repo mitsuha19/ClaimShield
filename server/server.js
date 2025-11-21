@@ -12,15 +12,19 @@ app.use(express.json());
 
 const indexRoutes = require("./routes/index");
 const userRoutes = require("./routes/user");
+const notificationRoutes = require("./routes/notification");
+const claimRoutes = require("./routes/claim");
 app.use("/", indexRoutes);
 app.use("/api/users", userRoutes);
+app.use("/api", notificationRoutes);
+app.use("/api", claimRoutes);
 
 const PORT = process.env.PORT || 3000;
 sequelize
   .sync({ alter: true })
   .then(() => {
     console.log("Database synced and tables created");
-    app.listen(PORT, () => {
+    app.listen(PORT, "0.0.0.0", () => {
       console.log(`Server running on port ${PORT}`);
     });
   })
