@@ -1,35 +1,51 @@
 import { createContext, useContext, useState } from "react";
 
 const AuthContext = createContext();
-
-const dummyUsers = [
-  { email: "petugas@example.com", password: "123456", role: "petugas" },
-  { email: "monitoring@example.com", password: "123456", role: "monitoring" },
-];
+const API_URL = "http://localhost:3000/api/users";
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(
+    JSON.parse(localStorage.getItem("user")) || null
+  );
+  const [token, setToken] = useState(localStorage.getItem("token") || null);
 
-  function login(email, password) {
-    // cari user dari dummy data
-    const found = dummyUsers.find(
-      (u) => u.email === email && u.password === password
-    );
+  // LOGIN API
+  async function login(username, password) {
+    try {
+      const res = await fetch(`${API_URL}/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password }),
+      });
 
-    if (found) {
-      setUser(found);
-      return { success: true, role: found.role };
+      const data = await res.json();
+
+      if (!res.ok) {
+        return { success: false, message: data.message };
+      }
+
+      // Simpan session
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("user", JSON.stringify(data.user));
+
+      setToken(data.token);
+      setUser(data.user);
+
+      return { success: true, role: data.user.role };
+    } catch (err) {
+      return { success: false, message: "Server error" };
     }
-
-    return { success: false, message: "Invalid credentials" };
   }
 
   function logout() {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
     setUser(null);
+    setToken(null);
   }
 
   return (
-    <AuthContext.Provider value={{ user, login, logout }}>
+    <AuthContext.Provider value={{ user, token, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

@@ -1,77 +1,81 @@
 import { useState } from "react";
-import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
+import { Eye, EyeOff } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
-import AuthCard from "../components/AuthCard";
 import { useAuth } from "../auth/AuthContext";
+import AuthCard from "../components/AuthCard";
 
 export default function Login() {
-  const [show, setShow] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
 
-  function handleLogin(e) {
+  const [show, setShow] = useState(false);
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+
+  async function handleSubmit(e) {
     e.preventDefault();
 
-    const email = document.getElementById("email").value;
-    const password = document.getElementById("password").value;
+    const res = await login(username, password);
 
-    const result = login(email, password);
-
-    if (!result.success) {
-      alert("Email atau password salah!");
+    if (!res.success) {
+      setError(res.message);
       return;
     }
 
-    if (result.role === "petugas") navigate("/dashboard-fktp");
-    if (result.role === "monitoring") navigate("/dashboard-bpjs");
+    // Redirect berdasarkan ROLE
+    if (res.role === "FKTP") navigate("/dashboard-fktp");
+    else if (res.role === "BPJS") navigate("/dashboard-bpjs");
   }
 
   return (
-    <div className="w-full min-h-screen flex items-center justify-center">
+    <div className="min-h-screen flex items-center justify-center bg-[#142150] px-4">
       <AuthCard>
-        <h3 className="text-l font-semibold text-gray-600 mb-6">
+        <h3 className="text-[17px] font-semibold text-gray-800 mb-6">
           Please enter your account details
         </h3>
 
-        {/* Email */}
-        <label className="text-sm font-medium text-gray-700">Email</label>
+        {error && (
+          <p className="text-red-600 text-sm mb-3">{error}</p>
+        )}
+
+        {/* Username */}
+        <label className="text-sm font-medium text-gray-700">Username</label>
         <input
-          id="email"
-          type="email"
-          placeholder="Input your email"
-          className="w-full mt-1 mb-4 px-3 py-2 border rounded-lg focus:outline-teal-600"
+          type="text"
+          placeholder="Input your username"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+          className="w-full mt-1 mb-4 px-3 py-2 border border-gray-300 rounded-lg focus-visible:outline-teal-600"
         />
 
         {/* Password */}
         <label className="text-sm font-medium text-gray-700">Password</label>
         <div className="relative">
           <input
-            id="password"
             type={show ? "text" : "password"}
             placeholder="Input your password"
-            className="w-full mt-1 mb-6 px-3 h-11 border rounded-lg focus:outline-teal-600"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="w-full mt-1 mb-6 px-3 py-2 border border-gray-300 rounded-lg focus-visible:outline-teal-600"
           />
-          <span
+
+          <button
+            type="button"
             onClick={() => setShow(!show)}
-            className="absolute inset-y-0 right-3 flex items-center cursor-pointer text-gray-500 translate-y-[-6px]"
+            className="absolute right-3 top-1/2 -translate-y-4 text-gray-500"
           >
-            {show ? (
-              <EyeSlashIcon className="w-5 h-5" />
-            ) : (
-              <EyeIcon className="w-5 h-5" />
-            )}
-          </span>
+            {show ? <EyeOff size={18} /> : <Eye size={18} />}
+          </button>
         </div>
 
-        {/* Button */}
         <button
-          onClick={handleLogin}
-          className="w-full bg-teal-600 hover:bg-teal-700 transition text-white font-semibold py-2 rounded-lg"
+          onClick={handleSubmit}
+          className="w-full bg-teal-600 hover:bg-teal-700 text-white font-semibold py-2 rounded-lg transition"
         >
           Sign In
         </button>
 
-        {/* Footer */}
         <p className="mt-4 text-center text-sm text-gray-600">
           Don’t have an account?{" "}
           <Link to="/register" className="text-teal-600 font-semibold">

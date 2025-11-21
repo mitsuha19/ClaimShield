@@ -1,14 +1,23 @@
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import { LayoutDashboard, LogOut } from "lucide-react";
+import { useAuth } from "../../auth/AuthContext";
 
 export default function Sidebar() {
+  const { logout } = useAuth();
+  const navigate = useNavigate();
+
+  function handleLogout() {
+    logout();
+    navigate("/login");
+  }
+
   return (
     <div className="w-64 bg-white shadow min-h-screen p-4 flex flex-col">
       <div className="flex-1">
         <img src="/fktp.png" className="h-20 mx-auto mb-6" />
 
         <NavLink
-          to="/"
+          to="/dashboard-fktp"
           className={({ isActive }) =>
             `flex gap-3 items-center px-3 py-2 rounded-lg mb-2
             ${isActive ? "bg-[#E7F4F8] text-teal-600" : "text-gray-700 hover:bg-gray-100"}`
@@ -20,6 +29,7 @@ export default function Sidebar() {
       </div>
 
       <button
+        onClick={handleLogout}
         className="
           flex items-center gap-2
           px-3 py-2
