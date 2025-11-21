@@ -24,3 +24,6 @@ flutter:
   uses-material-design: true
   assets:
     - assets/images/home.jpeg
+    - assets/images/qr.png
+    - assets/images/notif.png
+    - assets/images/qr_code.png
