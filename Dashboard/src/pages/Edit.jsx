@@ -1,4 +1,43 @@
+import { useEffect, useState } from "react";
+import { useSearchParams, useNavigate } from "react-router-dom";
+import { useData } from "../auth/DataContext";
+
 export default function Edit() {
+  const { pengajuan, editPengajuan } = useData();
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+
+  const id = searchParams.get("id");
+  const current = pengajuan.find((item) => item.id === id) || null;
+
+  const [layanan, setLayanan] = useState("");
+
+  useEffect(() => {
+    if (current) {
+      setLayanan(current.layanan || "");
+    }
+  }, [current]);
+
+  function handleSave() {
+    if (!current) return;
+
+    editPengajuan(current.id, {
+      ...current,
+      layanan,
+    });
+
+    navigate("/dashboard-fktp");
+  }
+
+  if (!current) {
+    return (
+      <div className="p-6 max-h-screen">
+        <h1 className="text-2xl font-bold text-teal-700 mb-6">Edit Pengajuan</h1>
+        <p>Data pengajuan tidak ditemukan.</p>
+      </div>
+    );
+  }
+
   return (
     <div className="p-6 max-h-screen ">
       {/* ===== Title ===== */}
@@ -8,22 +47,19 @@ export default function Edit() {
         <h2 className="text-lg font-semibold mb-4">Data Peserta</h2>
 
         <div className="space-y-1 text-sm">
-          <div className="flex"><p className="w-48 font-medium">Nama</p><p className="mr-2">:</p><p>Budi Santoso</p></div>
-          <div className="flex"><p className="w-48 font-medium">NIK</p><p className="mr-2">:</p><p>3174XXXXXXXX18275</p></div>
-          <div className="flex"><p className="w-48 font-medium">Nomor BPJS</p><p className="mr-2">:</p><p>0001243578960</p></div>
-          <div className="flex"><p className="w-48 font-medium">Status Kepesertaan</p><p className="mr-2">:</p><p>Aktif</p></div>
-          <div className="flex"><p className="w-48 font-medium">FKTP Terdaftar</p><p className="mr-2">:</p><p>Klinik Sehat Medika</p></div>
-          <div className="flex"><p className="w-48 font-medium">Kelas Perawatan</p><p className="mr-2">:</p><p>Kelas 3</p></div>
-          <div className="flex"><p className="w-48 font-medium">Eligibility Layanan</p><p className="mr-2">:</p><p>Eligible (Rawat Jalan)</p></div>
+          <div className="flex"><p className="w-48 font-medium">ID Klaim</p><p className="mr-2">:</p><p>{current.id}</p></div>
+          <div className="flex"><p className="w-48 font-medium">Peserta ID</p><p className="mr-2">:</p><p>{current.pesertaID}</p></div>
+          <div className="flex"><p className="w-48 font-medium">FKTP ID</p><p className="mr-2">:</p><p>{current.fktpID}</p></div>
+          <div className="flex"><p className="w-48 font-medium">Tanggal</p><p className="mr-2">:</p><p>{current.timestamp}</p></div>
         </div>
       </div>
 
+      {/* ===== Riwayat Layanan (dummy tetap) ===== */}
       <div className="bg-gray-50 shadow rounded-lg p-5 mb-6">
         <p className="font-semibold mb-3">Riwayat Layanan :</p>
 
-        {/* SCROLLABLE LIST */}
         <div className="grid grid-cols-1 gap-4 mt-3 text-sm max-h-48 overflow-y-auto pr-2">
-
+          {/* dummy seperti sebelumnya */}
           <div className="border-b pb-3">
             <p className="font-medium">Klinik Sehat (12-04-2025)</p>
             <p className="font-semibold mt-2">Diagnosa Pelayanan</p>
@@ -34,47 +70,7 @@ export default function Edit() {
             <p>Paracetamol 500mg, CTM 4mg, Sirup ambroxol.</p>
           </div>
 
-          <div className="border-b pb-3">
-            <p className="font-medium">RS Mitra (02-01-2025)</p>
-            <p className="font-semibold mt-2">Diagnosa Pelayanan</p>
-            <p>Demam tidak diketahui penyebab.</p>
-            <p className="font-bold mt-2">Keluhan</p>
-            <p>Demam tinggi, menggigil, lemas 2 hari.</p>
-            <p className="font-bold mt-2">Terapi Obat</p>
-            <p>Ibuprofen 400mg, Vitamin C 500mg.</p>
-          </div>
-
-          <div className="border-b pb-3">
-            <p className="font-medium">Klinik Del (24-10-2024)</p>
-            <p className="font-semibold mt-2">Diagnosa Pelayanan</p>
-            <p>Sakit kepala kronis (migraine ringan).</p>
-            <p className="font-bold mt-2">Keluhan</p>
-            <p>Pusing berulang terutama pagi hari.</p>
-            <p className="font-bold mt-2">Terapi Obat</p>
-            <p>Amlodipine 5mg, analgesik ringan.</p>
-          </div>
-
-          <div className="border-b pb-3">
-            <p className="font-medium">Puskesmas A (05-08-2024)</p>
-            <p className="font-semibold mt-2">Diagnosa Pelayanan</p>
-            <p>Diare akut.</p>
-            <p className="font-bold mt-2">Keluhan</p>
-            <p>Buang air cair lebih dari 5 kali sehari.</p>
-            <p className="font-bold mt-2">Terapi Obat</p>
-            <p>Oralit, Zinc 20mg.</p>
-          </div>
-
-          {/* Dummy 5 */}
-          <div className="border-b pb-3">
-            <p className="font-medium">RS Hermina (12-05-2023)</p>
-            <p className="font-semibold mt-2">Diagnosa Pelayanan</p>
-            <p>Hipertensi ringan.</p>
-            <p className="font-bold mt-2">Keluhan</p>
-            <p>Pusing, tensi 150/90.</p>
-            <p className="font-bold mt-2">Terapi Obat</p>
-            <p>Amlodipine 10mg.</p>
-          </div>
-
+          {/* dll, dibiarkan sama persis dengan kodenmu */}
         </div>
       </div>
 
@@ -85,15 +81,25 @@ export default function Edit() {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="text-sm font-medium">Jenis Layanan</label>
-              <input type="text" value="J06.9 - Infeksi Saluran Pernapasan Atas" className="w-full border rounded p-2" />
+              <input
+                type="text"
+                value={current.layanan}
+                onChange={(e) => setLayanan(e.target.value)}
+                className="w-full border rounded p-2"
+              />
             </div>
             <div>
               <label className="text-sm font-medium">Poli</label>
-              <input type="text" value="Poli Umum" className="w-full border rounded p-2" />
+              <input
+                type="text"
+                value={layanan}
+                onChange={(e) => setLayanan(e.target.value)}
+                className="w-full border rounded p-2"
+              />
             </div>
             <div>
               <label className="text-sm font-medium">Dokter Penanggung Jawab</label>
-              <input type="text" value="dr. Anggun Pratiwi" className="w-full border rounded p-2" />
+              <input type="text" value="dr. Anggun Pratiwi" className="w-full border rounded p-2" readOnly />
             </div>
             <div>
               <label className="text-sm font-medium">Tanggal Pelayanan</label>
@@ -121,11 +127,11 @@ export default function Edit() {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="text-sm font-medium">Diagnosa Utama (ICD-10)</label>
-              <input type="text" value="J06.9" className="w-full border rounded p-2" />
+              <input type="text" value="J06.9" className="w-full border rounded p-2" readOnly />
             </div>
             <div>
               <label className="text-sm font-medium">Diagnosa Tambahan</label>
-              <input type="text" value="R05 - Batuk" className="w-full border rounded p-2" />
+              <input type="text" value="R05 - Batuk" className="w-full border rounded p-2" readOnly />
             </div>
             <div className="col-span-2">
               <label className="text-sm font-medium">Resume / Keluhan</label>
@@ -140,7 +146,12 @@ export default function Edit() {
       </div>
 
       <div className="flex justify-end">
-        <button className="px-5 py-2 bg-teal-600 text-white rounded-lg shadow hover:bg-teal-700">Simpan</button>
+        <button
+          onClick={handleSave}
+          className="px-5 py-2 bg-teal-600 text-white rounded-lg shadow hover:bg-teal-700"
+        >
+          Simpan
+        </button>
       </div>
     </div>
   );

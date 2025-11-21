@@ -8,11 +8,13 @@ import Detail from "./pages/Detail";
 import FKTP from "./dashboard/FKTP";
 import BPJS from "./dashboard/BPJS";
 import { AuthProvider } from "./auth/AuthContext";
+import { DataProvider } from "./auth/DataContext";
 
 function App() {
   return (
     <AuthProvider>
-      <BrowserRouter>
+      <DataProvider>
+        <BrowserRouter>
           <Routes>
             <Route path="/" element={<Login />} />
             <Route path="/login" element={<Login />} />
@@ -28,7 +30,8 @@ function App() {
             <Route path="/detail" element={<MainLayout><Detail /></MainLayout>} />
 
           </Routes>
-      </BrowserRouter>
+        </BrowserRouter>
+      </DataProvider>
     </AuthProvider>
   );
 }
