@@ -80,7 +80,7 @@ export default function Detail() {
       </div>
 
       {/* ===== Layanan + Diagnosa + Status ===== */}
-      <div className="grid grid-cols-3 gap-6 mb-6">
+      <div className="grid grid-cols-[2fr_2fr_1fr] gap-6 mb-6">
 
         {/* Informasi Layanan */}
         <div className="bg-white shadow rounded-lg p-5 col-span-1">
