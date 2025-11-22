@@ -49,7 +49,7 @@ export default function FKTP() {
   const data = pengajuan.map((item) => ({
     id: item.id,
     createdAt: item.timestamp,
-    name: item.pesertaID,
+    name: item.nama,
     service: item.layanan,
     status: "Menunggu",
   }));
