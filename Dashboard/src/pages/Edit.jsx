@@ -11,10 +11,12 @@ export default function Edit() {
   const current = pengajuan.find((item) => item.id === id) || null;
 
   const [layanan, setLayanan] = useState("");
+  const [poli, setPoli] = useState("");
 
   useEffect(() => {
     if (current) {
       setLayanan(current.layanan || "");
+      setPoli(current.poli || current.layanan || "");
     }
   }, [current]);
 
@@ -24,6 +26,7 @@ export default function Edit() {
     editPengajuan(current.id, {
       ...current,
       layanan,
+      poli
     });
 
     navigate("/dashboard-fktp");
@@ -39,10 +42,11 @@ export default function Edit() {
   }
 
   return (
-    <div className="p-6 max-h-screen ">
-      {/* ===== Title ===== */}
+    <div className="p-6 max-h-screen">
+
       <h1 className="text-2xl font-bold text-teal-700 mb-6">Edit Pengajuan</h1>
 
+      {/* DATA PESERTA */}
       <div className="bg-gray-50 shadow rounded-lg p-5 mb-6">
         <h2 className="text-lg font-semibold mb-4">Data Peserta</h2>
 
@@ -54,42 +58,68 @@ export default function Edit() {
         </div>
       </div>
 
-      {/* ===== Riwayat Layanan (dummy tetap) ===== */}
-      <div className="bg-gray-50 shadow rounded-lg p-5 mb-6">
-        <p className="font-semibold mb-3">Riwayat Layanan :</p>
+      {/* RIWAYAT LAYANAN */}
+      {current.riwayat && (
+        <div className="bg-gray-50 shadow rounded-lg p-5 mb-6">
+          <p className="font-semibold mb-3">Riwayat Layanan :</p>
 
-        <div className="grid grid-cols-1 gap-4 mt-3 text-sm max-h-48 overflow-y-auto pr-2">
-          {/* dummy seperti sebelumnya */}
-          <div className="border-b pb-3">
-            <p className="font-medium">Klinik Sehat (12-04-2025)</p>
-            <p className="font-semibold mt-2">Diagnosa Pelayanan</p>
-            <p>Infeksi saluran pernapasan atas (ISPA) non spesifik.</p>
-            <p className="font-bold mt-2">Keluhan</p>
-            <p>Batuk berdahak, pilek, tenggorokan sakit sejak 3 hari.</p>
-            <p className="font-bold mt-2">Terapi Obat</p>
-            <p>Paracetamol 500mg, CTM 4mg, Sirup ambroxol.</p>
+          <div className="grid grid-cols-1 gap-4 mt-3 text-sm max-h-48 overflow-y-auto pr-2">
+            {current.riwayat.map((r, index) => (
+              <div key={index} className="border-b pb-3">
+
+                <p className="font-medium">{r.fasilitas} ({r.tanggal})</p>
+
+                <p className="font-semibold mt-2">Diagnosa Pelayanan</p>
+                <p>{r.diagnosa}</p>
+
+                <p className="font-bold mt-2">Keluhan</p>
+                <p>{r.keluhan}</p>
+
+                <p className="font-bold mt-2">Terapi Obat</p>
+                <p>{r.terapi}</p>
+
+              </div>
+            ))}
           </div>
-
-          {/* dll, dibiarkan sama persis dengan kodenmu */}
         </div>
-      </div>
+      )}
 
-      {/* ===== Layanan + Diagnosa ===== */}
+      {/* RIWAYAT REKAM MEDIS */}
+      {current.rekam_medis && (
+        <div className="bg-gray-50 shadow rounded-lg p-5 mb-6">
+          <p className="font-semibold mb-3">Riwayat Rekam Medis :</p>
+
+          <div className="grid grid-cols-1 gap-4 mt-3 text-sm max-h-48 overflow-y-auto pr-2">
+            {current.rekam_medis.map((r, index) => (
+              <div key={index} className="border-b pb-3">
+
+                <p className="font-medium">{r.fasilitas} ({r.tanggal})</p>
+
+                <p className="font-semibold mt-2">Tindakan Medis</p>
+                <p>{r.tindakan}</p>
+
+                <p className="font-bold mt-2">Hasil Pemeriksaan</p>
+                <p>{r.hasil}</p>
+
+                <p className="font-bold mt-2">Catatan Dokter</p>
+                <p>{r.catatan}</p>
+
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* INFORMASI LAYANAN */}
       <div className="grid grid-cols-2 gap-6 mb-6">
+
         <div className="bg-white shadow rounded-lg p-5">
           <h2 className="text-lg font-semibold mb-4">Informasi Layanan</h2>
+
           <div className="grid grid-cols-2 gap-4">
+
             <div>
               <label className="text-sm font-medium">Jenis Layanan</label>
-              <input
-                type="text"
-                value={current.layanan}
-                onChange={(e) => setLayanan(e.target.value)}
-                className="w-full border rounded p-2"
-              />
-            </div>
-            <div>
-              <label className="text-sm font-medium">Poli</label>
               <input
                 type="text"
                 value={layanan}
@@ -97,50 +127,96 @@ export default function Edit() {
                 className="w-full border rounded p-2"
               />
             </div>
+
+            <div>
+              <label className="text-sm font-medium">Poli</label>
+              <input
+                type="text"
+                value={poli}
+                onChange={(e) => setPoli(e.target.value)}
+                className="w-full border rounded p-2"
+              />
+            </div>
+
             <div>
               <label className="text-sm font-medium">Dokter Penanggung Jawab</label>
-              <input type="text" value="dr. Anggun Pratiwi" className="w-full border rounded p-2" readOnly />
+              <input
+                type="text"
+                value="dr. Anggun Pratiwi"
+                readOnly
+                className="w-full border rounded p-2 bg-gray-100"
+              />
             </div>
+
             <div>
               <label className="text-sm font-medium">Tanggal Pelayanan</label>
-              <input type="date" defaultValue="2025-01-24" className="w-full border rounded p-2" />
+              <input
+                type="date"
+                defaultValue={current.timestamp}
+                className="w-full border rounded p-2"
+              />
             </div>
+
             <div className="col-span-2">
-              <label className="text-sm font-medium">
-                Surat Eligibilitas Peserta
-              </label>
+              <label className="text-sm font-medium">Surat Eligibilitas Peserta</label>
               <input
                 type="file"
                 className="mt-1 block w-full text-sm text-gray-700
-                  file:mr-4 file:py-2 file:px-4
-                  file:rounded file:border-0
-                  file:bg-teal-600 file:text-white
-                  hover:file:bg-teal-700
-                  cursor-pointer"
+                file:mr-4 file:py-2 file:px-4
+                file:rounded file:border-0
+                file:bg-teal-600 file:text-white
+                hover:file:bg-teal-700 cursor-pointer"
               />
             </div>
           </div>
         </div>
 
+        {/* DIAGNOSA */}
         <div className="bg-white shadow rounded-lg p-5">
           <h2 className="text-lg font-semibold mb-4">Diagnosa & Tindakan</h2>
+
           <div className="grid grid-cols-2 gap-4">
+
             <div>
               <label className="text-sm font-medium">Diagnosa Utama (ICD-10)</label>
-              <input type="text" value="J06.9" className="w-full border rounded p-2" readOnly />
+              <input
+                type="text"
+                value="J06.9"
+                readOnly
+                className="w-full border rounded p-2 bg-gray-100"
+              />
             </div>
+
             <div>
               <label className="text-sm font-medium">Diagnosa Tambahan</label>
-              <input type="text" value="R05 - Batuk" className="w-full border rounded p-2" readOnly />
+              <input
+                type="text"
+                value="R05 - Batuk"
+                readOnly
+                className="w-full border rounded p-2 bg-gray-100"
+              />
             </div>
+
             <div className="col-span-2">
               <label className="text-sm font-medium">Resume / Keluhan</label>
-              <textarea className="w-full border rounded p-2 h-20">Batuk sejak 3 hari lalu, pilek, tidak demam.</textarea>
+              <textarea
+                className="w-full border rounded p-2 h-20 bg-gray-100"
+                readOnly
+              >
+                Batuk sejak 3 hari lalu, pilek, tidak demam.
+              </textarea>
             </div>
+
             <div className="col-span-2">
               <label className="text-sm font-medium">Terapi Obat</label>
-              <textarea className="w-full border rounded p-2 h-20">Paracetamol, CTM, Sirup batuk</textarea>
+              <textarea
+                className="w-full border rounded p-2 h-20 bg-gray-100"
+                readOnly
+              >
+                Paracetamol, CTM, Sirup batuk
+              </textarea>
             </div>
+
           </div>
         </div>
       </div>

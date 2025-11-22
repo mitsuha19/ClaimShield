@@ -8,15 +8,11 @@ export default function MainLayout({ children }) {
   const { pathname } = useLocation();
   const { user } = useAuth();
 
-  // Sidebar (role)
   const SidebarComponent = user?.role === "BPJS" ? SidebarMonitor : Sidebar;
 
-  // Dashboard (role)
-  const dashboardPath = user?.role === "BPJS"
-    ? "/dashboard-bpjs"
-    : "/dashboard-fktp";
+  const dashboardPath =
+    user?.role === "BPJS" ? "/dashboard-bpjs" : "/dashboard-fktp";
 
-  // Default breadcrumb
   let breadcrumb = [
     { label: "Dashboard", path: dashboardPath, active: pathname === dashboardPath }
   ];
@@ -39,13 +35,15 @@ export default function MainLayout({ children }) {
   }
 
   return (
-    <div className="flex min-h-screen bg-gray-100">
+    <div className="flex h-screen overflow-hidden overflow-x-hidden bg-gray-100">
+
       <SidebarComponent />
 
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col overflow-hidden overflow-x-hidden relative">
+
         <Topbar items={breadcrumb} />
 
-        <div className="flex-1 p-6 overflow-auto">
+        <div className="flex-1 overflow-y-auto overflow-x-hidden p-6 relative">
           {children}
         </div>
       </div>
