@@ -29,14 +29,14 @@ class NotificationPage extends StatelessWidget {
         subtitle: 'Klaim di Klinik Sehat Medika',
         date: 'Pada 18 Nov 2025 telah DITERIMA.',
         id: 'CLM-2025-11-18-000234',
-        timeAgo: '15h',
+        timeAgo: '4d',
       ),
       NotificationData(
         title: 'ClaimShield – Klaim Anda Diterima',
         subtitle: 'Klaim di Klinik Sehat Medika',
-        date: 'Pada 18 Nov 2025 telah DITERIMA.',
-        id: 'CLM-2025-11-18-000234',
-        timeAgo: '15h',
+        date: 'Pada 10 Jan 2025 telah DITERIMA.',
+        id: 'CLM-2025-11-18-000235',
+        timeAgo: '316d',
       ),
       // Tambahkan lebih banyak item jika diperlukan
     ];

@@ -35,17 +35,18 @@ class ClaimDetailPage extends StatelessWidget {
     // Dummy data berdasarkan ID klaim (di real app, fetch dari API)
     final ClaimDetailData detail = ClaimDetailData(
       claimId: claimId,
-      serviceDate: '18 Nov 2025',
+      serviceDate: '22 Nov 2025',
       facilityName: 'Klinik Sehat Medika',
       serviceType: 'Poli Rawat Jalan',
       poli: 'Umum',
-      mainDiagnosis: 'J06.9 - Infeksi Saluran Pernapasan Atas',
-      additionalDiagnosis: 'R05 - Demam dan Lutut Sakit di Belakang',
+      mainDiagnosis: 'K30 - Dyspepsia (Gangguan Pencernaan)',
+      additionalDiagnosis: 'R10.1 - Nyeri Perut Bagian Atas',
       prescriptions: [
-        'ASAM MEFENAMAT 500 MG TABLET - 3x1',
-        'CETIRIZINE 10 MG TABLET - 1x1 KAPSUL',
+        'OMEPRAZOLE 20 MG CAPS - 2x1 (Sebelum Makan)',
+        'ANTASIDA DOEN TAB - 3x1 (Kunyah)',
+        'DOMPERIDONE 10 MG - 3x1 (Jika Mual)',
       ],
-      nonPrescriptions: ['Gentamicin Salep', 'Strata Yang Cukup'],
+      nonPrescriptions: ['Edukasi Pola Makan Teratur', 'Hindari Pedas/Asam'],
     );
 
     return Scaffold(
@@ -87,7 +88,7 @@ class ClaimDetailPage extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 12),
-            _buildInfoCard('ID Claim', detail.claimId, Icons.description),
+            _buildInfoCard('ID Claim', 'KLAIM-001', Icons.description),
             _buildInfoCard(
               'Tanggal Pelayanan',
               detail.serviceDate,

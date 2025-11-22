@@ -1,7 +1,12 @@
 import 'dart:convert';
-
-import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+
+// Import main untuk akses navigatorKey
+import '../main.dart';
+// Import halaman detail (sesuaikan path folder Anda)
+import '../screens/claim_detail_page.dart';
 
 class LocalNotificationService {
   LocalNotificationService._();
@@ -11,7 +16,7 @@ class LocalNotificationService {
 
   static const AndroidNotificationChannel _androidChannel =
       AndroidNotificationChannel(
-        'high_importance_channel', // id
+        'high_importance_channel', // id harus sama dengan backend
         'High Importance Notifications', // name
         description: 'Channel untuk notifikasi penting ClaimShield',
         importance: Importance.high,
@@ -20,10 +25,32 @@ class LocalNotificationService {
   static Future<void> initialize() async {
     // Android init
     const androidInit = AndroidInitializationSettings('@mipmap/ic_launcher');
-
     const initSettings = InitializationSettings(android: androidInit);
 
-    await _plugin.initialize(initSettings);
+    await _plugin.initialize(
+      initSettings,
+      // TAMBAHAN PENTING: Menangani klik notifikasi saat aplikasi TERBUKA (Foreground)
+      onDidReceiveNotificationResponse: (NotificationResponse response) {
+        if (response.payload != null) {
+          try {
+            final data = jsonDecode(response.payload!);
+            if (data['claimId'] != null) {
+              // Delay untuk pastikan Navigator ready
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                navigatorKey.currentState?.push(
+                  MaterialPageRoute(
+                    builder: (context) =>
+                        ClaimDetailPage(claimId: data['claimId']),
+                  ),
+                );
+              });
+            }
+          } catch (e) {
+            debugPrint('Error parsing payload: $e');
+          }
+        }
+      },
+    );
 
     // Buat channel untuk Android
     final androidImpl = _plugin
@@ -53,6 +80,7 @@ class LocalNotificationService {
       notification.title,
       notification.body,
       details,
+      // PENTING: Masukkan data asli ke payload agar bisa dibaca saat diklik
       payload: jsonEncode(message.data),
     );
   }
