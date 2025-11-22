@@ -13,7 +13,9 @@ export default function Detail() {
   if (!current) {
     return (
       <div className="p-6">
-        <h1 className="text-2xl font-bold text-teal-700 mb-6">Detail Pengajuan</h1>
+        <h1 className="text-2xl font-bold text-teal-700 mb-6">
+          Detail Pengajuan
+        </h1>
         <p>Data pengajuan tidak ditemukan.</p>
       </div>
     );
@@ -21,12 +23,13 @@ export default function Detail() {
 
   return (
     <div className="p-6 overflow-x-hidden">
-
-      <h1 className="text-2xl font-bold text-teal-700 mb-1">Detail Pengajuan</h1>
+      <h1 className="text-2xl font-bold text-teal-700 mb-1">
+        Detail Pengajuan
+      </h1>
 
       <p className="text-sm text-gray-600 mb-6">
-        ID Klaim: <span className="font-semibold">{current.id}</span> · Peserta ID:{" "}
-        <span className="font-semibold">{current.pesertaID}</span> · FKTP:{" "}
+        ID Klaim: <span className="font-semibold">{current.id}</span> · Peserta
+        ID: <span className="font-semibold">{current.pesertaID}</span> · FKTP:{" "}
         <span className="font-semibold">{current.fktpID}</span> · Tanggal:{" "}
         <span className="font-semibold">{current.timestamp}</span>
       </p>
@@ -35,12 +38,36 @@ export default function Detail() {
         <h2 className="text-lg font-semibold mb-4">Data Peserta</h2>
 
         <div className="space-y-1 text-sm">
-          <div className="flex"><p className="w-48 font-medium">Peserta ID</p><p className="mr-2">:</p><p>{current.pesertaID}</p></div>
-          <div className="flex"><p className="w-48 font-medium">FKTP ID</p><p className="mr-2">:</p><p>{current.fktpID}</p></div>
-          <div className="flex"><p className="w-48 font-medium">Tanggal</p><p className="mr-2">:</p><p>{current.timestamp}</p></div>
-          <div className="flex"><p className="w-48 font-medium">Status Kepesertaan</p><p className="mr-2">:</p><p>Aktif</p></div>
-          <div className="flex"><p className="w-48 font-medium">Kelas Perawatan</p><p className="mr-2">:</p><p>Kelas 3</p></div>
-          <div className="flex"><p className="w-48 font-medium">Eligibility Layanan</p><p className="mr-2">:</p><p>Eligible (Rawat Jalan)</p></div>
+          <div className="flex">
+            <p className="w-48 font-medium">Peserta ID</p>
+            <p className="mr-2">:</p>
+            <p>{current.pesertaID}</p>
+          </div>
+          <div className="flex">
+            <p className="w-48 font-medium">FKTP ID</p>
+            <p className="mr-2">:</p>
+            <p>{current.fktpID}</p>
+          </div>
+          <div className="flex">
+            <p className="w-48 font-medium">Tanggal</p>
+            <p className="mr-2">:</p>
+            <p>{current.timestamp}</p>
+          </div>
+          <div className="flex">
+            <p className="w-48 font-medium">Status Kepesertaan</p>
+            <p className="mr-2">:</p>
+            <p>Aktif</p>
+          </div>
+          <div className="flex">
+            <p className="w-48 font-medium">Kelas Perawatan</p>
+            <p className="mr-2">:</p>
+            <p>Kelas 3</p>
+          </div>
+          <div className="flex">
+            <p className="w-48 font-medium">Eligibility Layanan</p>
+            <p className="mr-2">:</p>
+            <p>Eligible (Rawat Jalan)</p>
+          </div>
         </div>
       </div>
 
@@ -51,8 +78,9 @@ export default function Detail() {
           <div className="grid grid-cols-1 gap-4 mt-3 text-sm">
             {current.riwayat.map((r, index) => (
               <div key={index} className="border-b pb-3">
-
-                <p className="font-medium">{r.fasilitas} ({r.tanggal})</p>
+                <p className="font-medium">
+                  {r.fasilitas} ({r.tanggal})
+                </p>
 
                 <p className="font-semibold mt-2">Diagnosa Pelayanan</p>
                 <p>{r.diagnosa}</p>
@@ -62,7 +90,6 @@ export default function Detail() {
 
                 <p className="font-bold mt-2">Terapi Obat</p>
                 <p>{r.terapi}</p>
-
               </div>
             ))}
           </div>
@@ -76,8 +103,9 @@ export default function Detail() {
           <div className="grid grid-cols-1 gap-4 mt-3 text-sm">
             {current.rekam_medis.map((r, index) => (
               <div key={index} className="border-b pb-3">
-
-                <p className="font-medium">{r.fasilitas} ({r.tanggal})</p>
+                <p className="font-medium">
+                  {r.fasilitas} ({r.tanggal})
+                </p>
 
                 <p className="font-semibold mt-2">Tindakan Medis</p>
                 <p>{r.tindakan}</p>
@@ -87,7 +115,6 @@ export default function Detail() {
 
                 <p className="font-bold mt-2">Catatan Dokter</p>
                 <p>{r.catatan}</p>
-
               </div>
             ))}
           </div>
@@ -95,7 +122,6 @@ export default function Detail() {
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-[2fr_2fr_1fr] gap-6 mb-6 overflow-x-hidden">
-
         <div className="bg-white shadow rounded-lg p-5">
           <h2 className="text-lg font-semibold mb-4">Informasi Layanan</h2>
 
@@ -121,7 +147,9 @@ export default function Detail() {
             </div>
 
             <div>
-              <label className="text-sm font-medium">Dokter Penanggung Jawab</label>
+              <label className="text-sm font-medium">
+                Dokter Penanggung Jawab
+              </label>
               <input
                 type="text"
                 value="dr. Anggun Pratiwi"
@@ -141,7 +169,9 @@ export default function Detail() {
             </div>
 
             <div className="col-span-2">
-              <label className="text-sm font-medium">Surat Eligibilitas Peserta</label>
+              <label className="text-sm font-medium">
+                Surat Eligibilitas Peserta
+              </label>
               <input
                 type="file"
                 disabled
@@ -159,26 +189,45 @@ export default function Detail() {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="text-sm font-medium">Diagnosa Utama (ICD-10)</label>
-              <input type="text" value="J06.9" className="w-full border rounded p-2 bg-gray-100" disabled />
+              <label className="text-sm font-medium">
+                Diagnosa Utama (ICD-10)
+              </label>
+              <input
+                type="text"
+                value="K30 - Dyspepsia (Gangguan Pencernaan)"
+                className="w-full border rounded p-2 bg-gray-100"
+                disabled
+              />
             </div>
 
             <div>
               <label className="text-sm font-medium">Diagnosa Tambahan</label>
-              <input type="text" value="R05 - Batuk" className="w-full border rounded p-2 bg-gray-100" disabled />
+              <input
+                type="text"
+                value="R10.1 - Nyeri Perut Bagian Atas"
+                className="w-full border rounded p-2 bg-gray-100"
+                disabled
+              />
             </div>
 
             <div className="col-span-2">
               <label className="text-sm font-medium">Resume / Keluhan</label>
-              <textarea className="w-full border rounded p-2 h-20 bg-gray-100" disabled>
-                Batuk sejak 3 hari lalu, pilek, tidak demam.
+              <textarea
+                className="w-full border rounded p-2 h-20 bg-gray-100"
+                disabled
+              >
+                nyeri perut sejak 3 hari lalu, pilek, tidak demam.
               </textarea>
             </div>
 
             <div className="col-span-2">
               <label className="text-sm font-medium">Terapi Obat</label>
-              <textarea className="w-full border rounded p-2 h-20 bg-gray-100" disabled>
-                Paracetamol, CTM, Sirup batuk
+              <textarea
+                className="w-full border rounded p-2 h-20 bg-gray-100"
+                disabled
+              >
+                OMEPRAZOLE 20 MG CAPS - 2x1 (Sebelum Makan), ANTASIDA DOEN TAB -
+                3x1 (Kunyah), DOMPERIDONE 10 MG - 3x1 (Jika Mual)
               </textarea>
             </div>
           </div>
@@ -190,7 +239,6 @@ export default function Detail() {
             Menunggu
           </div>
         </div>
-
       </div>
 
       <div className="flex justify-end">
@@ -201,7 +249,6 @@ export default function Detail() {
           Selesai
         </button>
       </div>
-
     </div>
   );
 }

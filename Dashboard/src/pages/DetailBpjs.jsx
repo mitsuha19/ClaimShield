@@ -1,125 +1,97 @@
 import { useSearchParams, useNavigate } from "react-router-dom";
-import { useState } from "react";
-import { useData } from "../auth/DataContext";
+import { useState, useEffect } from "react";
+import axios from "axios"; // Import Axios
+import { bpjsDummy } from "../utils/bpjsDummy"; // Asumsi path ke dummy data, sesuaikan jika perlu
 
 export default function DetailBpjs() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const id = searchParams.get("id");
 
-  const { getPengajuanById, updateStatus } = useData();
-
-  // Ambil data yang dibuat FKTP (real)
-  const fktpData = getPengajuanById(id);
-
-  // Dummy lengkap sebagai fallback
-  const detailData = {
-    id: "KLAIM-001",
-    pesertaID: "KLAIM-001",
-    nama: "Jonathan Siregar",
-    nik: "1234567890123456",
-    kelas: "Kelas 3",
-    fktp: "FKTP-01012",
-    eligibility: "Eligible - Rawat Jalan",
-    layanan: "J06.9 – Infeksi Saluran Pernapasan Atas",
-    timestamp: "2025-01-24",
-    status: "Menunggu",
-
-    informasi_layanan: {
-      jenis_layanan: "Rawat Jalan - Pemeriksaan Umum",
-      poli: "Poli Umum",
-      dokter: "dr. Anggun Pratiwi",
-      tanggal_pelayanan: "2025-01-24",
-    },
-
-    diagnosa_tindakan: {
-      diagnosa_utama: "J06.9",
-      diagnosa_tambahan: "R05 - Batuk",
-      resume: "Batuk sejak 3 hari lalu, pilek, tidak demam.",
-      terapi: "Paracetamol, CTM, Sirup Batuk",
-    },
-
-    riwayat: [
-      {
-        fasilitas: "Klinik Sehat",
-        tanggal: "2025-01-12",
-        diagnosa: "Infeksi saluran pernapasan atas (ISPA)",
-        keluhan: "Demam, batuk berdahak, badan lemas",
-        terapi: "Paracetamol 500mg, Mukolitik",
-      },
-      {
-        fasilitas: "Puskesmas Martubung",
-        tanggal: "2024-11-22",
-        diagnosa: "Alergi kulit",
-        keluhan: "Ruam merah pada lengan dan leher",
-        terapi: "CTM 4mg, Hydrocortisone salep",
-      },
-    ],
-
-    rekam_medis: [
-      {
-        fasilitas: "Klinik Sehat",
-        tanggal: "2024-07-14",
-        tindakan: "Pemeriksaan fisik lengkap",
-        hasil: "Tekanan darah tinggi",
-        catatan: "Pasien mengalami stres kerja",
-      },
-      {
-        fasilitas: "Rumah Sakit Murni Teguh",
-        tanggal: "2023-10-02",
-        tindakan: "Rontgen Dada",
-        hasil: "Tidak ditemukan kelainan",
-        catatan: "Disarankan evaluasi tahunan",
-      },
-    ],
-  };
-
-  const dummyList = [
-    {
-      id: "KLAIM-002",
-      pesertaID: "PST-9002",
-      nama: "Lana Bakkery",
-      layanan: "J06.9 – Infeksi Saluran Pernapasan Atas",
-      timestamp: "2025-01-22",
-      status: "Menunggu",
-    },
-    {
-      id: "KLAIM-003",
-      pesertaID: "PST-9003",
-      nama: "Jakob Sipaе",
-      layanan: "A09 – Diare Akut",
-      timestamp: "2025-01-21",
-      status: "Menunggu",
-    },
-    {
-      id: "KLAIM-004",
-      pesertaID: "PST-9004",
-      nama: "Timoty Ronald",
-      layanan: "I10 – Hipertensi Esensial",
-      timestamp: "2025-01-20",
-      status: "Diterima",
-    },
-    {
-      id: "KLAIM-005",
-      pesertaID: "PST-9005",
-      nama: "Martha Limbong",
-      layanan: "R05 – Batuk",
-      timestamp: "2025-01-18",
-      status: "Diterima",
-    },
-  ];
-
-  const allData = [detailData, ...dummyList];
-  const current = fktpData || allData.find((item) => item.id === id);
+  const [current, setCurrent] = useState(null); // State untuk data detail
+  const [list, setList] = useState([]); // Load full list untuk update
+  const [isLoading, setIsLoading] = useState(false); // Loading untuk API call
 
   const [showApprove, setShowApprove] = useState(false);
   const [showReject, setShowReject] = useState(false);
   const [rejectReason, setRejectReason] = useState("");
 
+  // Load data dari localStorage (atau sessionStorage jika mau temporary/hilang saat reload)
+  const loadData = () => {
+    const stored = localStorage.getItem("bpjs-data"); // Ganti ke sessionStorage.getItem jika temporary
+    const data = stored ? JSON.parse(stored) : bpjsDummy; // Fallback ke dummy jika belum ada
+    setList(data);
+    const found = data.find((item) => item.id === id);
+    setCurrent(found || null);
+  };
+
+  useEffect(() => {
+    loadData();
+  }, [id]);
+
+  // Fungsi untuk call API approve dengan Axios
+  const callApproveAPI = async (claimId) => {
+    try {
+      const response = await axios.post(
+        `http://localhost:4000/api/claims/${claimId}/approve`,
+        {
+          approvedBy: "Dr. Tirta",
+          status: "Approved",
+          userToken:
+            "deI1J6AqT_qTCabHZwFrrk:APA91bH3Zbz6Huzrsj7HyDzUqlZ_p_2tN8qE3xv4-b9jEJBXlmcuJ-JH7yeQEVvKAhmJyuhskjdHnMw159cwZkpWq4OkhX-haB5KNZVJh98ef3lk5UmRR30",
+        }
+      );
+
+      console.log("API Approve success:", response.data); // Log hasil untuk debug
+      return true;
+    } catch (error) {
+      console.error(
+        "API Approve failed:",
+        error.response?.data || error.message
+      );
+      alert("Gagal memanggil API approve. Cek console untuk detail."); // Atau handle lebih baik (e.g., toast)
+      return false;
+    }
+  };
+
+  // Fungsi update status (manual, update localStorage + API untuk approve)
+  // Hanya untuk KLAIM-001 seperti permintaan, tapi bisa dihapus batasan jika perlu
+  const updateStatus = async (targetId, newStatus, alasan = null) => {
+    if (targetId !== "KLAIM-001") {
+      console.warn("Update hanya untuk KLAIM-001 (demo mode)");
+      return;
+    }
+
+    const updatedList = list.map((item) =>
+      item.id === targetId
+        ? { ...item, status: newStatus, alasan: alasan }
+        : item
+    );
+
+    localStorage.setItem("bpjs-data", JSON.stringify(updatedList)); // Ganti ke sessionStorage jika temporary
+    setList(updatedList); // Update state untuk konsistensi
+
+    // Update current juga
+    setCurrent((prev) =>
+      prev ? { ...prev, status: newStatus, alasan: alasan } : null
+    );
+
+    // Jika approve, call API
+    if (newStatus === "Diterima") {
+      const apiSuccess = await callApproveAPI(targetId);
+      if (!apiSuccess) {
+        // Optional: Rollback jika API gagal, tapi untuk simple, kita lanjut aja
+        console.warn("API gagal, tapi local update tetap jalan.");
+      }
+    }
+  };
+
   if (!current) {
     return (
       <div className="p-6">
-        <h1 className="text-2xl font-bold text-teal-700 mb-6">Detail Pengajuan</h1>
+        <h1 className="text-2xl font-bold text-teal-700 mb-6">
+          Detail Pengajuan
+        </h1>
         <p>Data tidak ditemukan.</p>
       </div>
     );
@@ -127,8 +99,9 @@ export default function DetailBpjs() {
 
   return (
     <div className="p-6 overflow-x-hidden ">
-
-      <h1 className="text-2xl font-bold text-teal-700 mb-1">Detail Pengajuan</h1>
+      <h1 className="text-2xl font-bold text-teal-700 mb-1">
+        Detail Pengajuan
+      </h1>
 
       <p className="text-sm text-gray-600 mb-6">
         ID Klaim: <b>{current.id}</b> · Peserta ID: <b>{current.pesertaID}</b> ·
@@ -140,11 +113,21 @@ export default function DetailBpjs() {
         <h2 className="text-lg font-semibold mb-4">Data Peserta</h2>
 
         <div className="space-y-1 text-sm">
-          <div><b>Nama:</b> {current.nama}</div>
-          <div><b>NIK:</b> {current.nik}</div>
-          <div><b>Kelas Rawat:</b> {current.kelas}</div>
-          <div><b>Eligibility:</b> {current.eligibility}</div>
-          <div><b>Status:</b> {current.status || "Menunggu"}</div>
+          <div>
+            <b>Nama:</b> {current.nama}
+          </div>
+          <div>
+            <b>NIK:</b> {current.nik}
+          </div>
+          <div>
+            <b>Kelas Rawat:</b> {current.kelas}
+          </div>
+          <div>
+            <b>Eligibility:</b> {current.eligibility}
+          </div>
+          <div>
+            <b>Status:</b> {current.status || "Menunggu"}
+          </div>
 
           {current.alasan && (
             <div className="text-red-600">
@@ -162,10 +145,18 @@ export default function DetailBpjs() {
           <div className="grid grid-cols-1 gap-4 text-sm">
             {current.riwayat.map((r, idx) => (
               <div key={idx} className="border-b pb-3">
-                <p className="font-medium">{r.fasilitas} ({r.tanggal})</p>
-                <p><b>Diagnosa:</b> {r.diagnosa}</p>
-                <p><b>Keluhan:</b> {r.keluhan}</p>
-                <p><b>Terapi:</b> {r.terapi}</p>
+                <p className="font-medium">
+                  {r.fasilitas} ({r.tanggal})
+                </p>
+                <p>
+                  <b>Diagnosa:</b> {r.diagnosa}
+                </p>
+                <p>
+                  <b>Keluhan:</b> {r.keluhan}
+                </p>
+                <p>
+                  <b>Terapi:</b> {r.terapi}
+                </p>
               </div>
             ))}
           </div>
@@ -180,10 +171,18 @@ export default function DetailBpjs() {
           <div className="grid grid-cols-1 gap-4 text-sm">
             {current.rekam_medis.map((r, idx) => (
               <div key={idx} className="border-b pb-3">
-                <p className="font-medium">{r.fasilitas} ({r.tanggal})</p>
-                <p><b>Tindakan:</b> {r.tindakan}</p>
-                <p><b>Hasil:</b> {r.hasil}</p>
-                <p><b>Catatan Dokter:</b> {r.catatan}</p>
+                <p className="font-medium">
+                  {r.fasilitas} ({r.tanggal})
+                </p>
+                <p>
+                  <b>Tindakan:</b> {r.tindakan}
+                </p>
+                <p>
+                  <b>Hasil:</b> {r.hasil}
+                </p>
+                <p>
+                  <b>Catatan Dokter:</b> {r.catatan}
+                </p>
               </div>
             ))}
           </div>
@@ -192,16 +191,43 @@ export default function DetailBpjs() {
 
       {/* ===================== INFORMASI LAYANAN + DIAGNOSA ===================== */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-[2fr_2fr_1fr] gap-6 mb-6 overflow-x-hidden">
-
         {/* Informasi Layanan */}
         <div className="bg-white shadow rounded-lg p-5">
           <h2 className="text-lg font-semibold mb-4">Informasi Layanan</h2>
 
           <div className="grid grid-cols-2 gap-4 text-sm">
-            <div><label>Jenis Layanan</label><input disabled value={current.informasi_layanan?.jenis_layanan || ""} className="w-full border rounded p-2 bg-gray-100"/></div>
-            <div><label>Poli</label><input disabled value={current.informasi_layanan?.poli || ""} className="w-full border rounded p-2 bg-gray-100"/></div>
-            <div><label>Dokter</label><input disabled value={current.informasi_layanan?.dokter || ""} className="w-full border rounded p-2 bg-gray-100"/></div>
-            <div><label>Tanggal Pelayanan</label><input disabled value={current.informasi_layanan?.tanggal_pelayanan || ""} className="w-full border rounded p-2 bg-gray-100"/></div>
+            <div>
+              <label>Jenis Layanan</label>
+              <input
+                disabled
+                value={current.informasi_layanan?.jenis_layanan || ""}
+                className="w-full border rounded p-2 bg-gray-100"
+              />
+            </div>
+            <div>
+              <label>Poli</label>
+              <input
+                disabled
+                value={current.informasi_layanan?.poli || ""}
+                className="w-full border rounded p-2 bg-gray-100"
+              />
+            </div>
+            <div>
+              <label>Dokter</label>
+              <input
+                disabled
+                value={current.informasi_layanan?.dokter || ""}
+                className="w-full border rounded p-2 bg-gray-100"
+              />
+            </div>
+            <div>
+              <label>Tanggal Pelayanan</label>
+              <input
+                disabled
+                value={current.informasi_layanan?.tanggal_pelayanan || ""}
+                className="w-full border rounded p-2 bg-gray-100"
+              />
+            </div>
           </div>
         </div>
 
@@ -210,17 +236,41 @@ export default function DetailBpjs() {
           <h2 className="text-lg font-semibold mb-4">Diagnosa & Tindakan</h2>
 
           <div className="grid grid-cols-2 gap-4 text-sm">
-            <div><label>Diagnosa Utama</label><input disabled value={current.diagnosa_tindakan?.diagnosa_utama || ""} className="w-full border rounded p-2 bg-gray-100"/></div>
-            <div><label>Diagnosa Tambahan</label><input disabled value={current.diagnosa_tindakan?.diagnosa_tambahan || ""} className="w-full border rounded p-2 bg-gray-100"/></div>
+            <div>
+              <label>Diagnosa Utama</label>
+              <input
+                disabled
+                value={current.diagnosa_tindakan?.diagnosa_utama || ""}
+                className="w-full border rounded p-2 bg-gray-100"
+              />
+            </div>
+            <div>
+              <label>Diagnosa Tambahan</label>
+              <input
+                disabled
+                value={current.diagnosa_tindakan?.diagnosa_tambahan || ""}
+                className="w-full border rounded p-2 bg-gray-100"
+              />
+            </div>
 
             <div className="col-span-2">
               <label>Resume</label>
-              <textarea disabled className="w-full border rounded p-2 bg-gray-100 h-20">{current.diagnosa_tindakan?.resume}</textarea>
+              <textarea
+                disabled
+                className="w-full border rounded p-2 bg-gray-100 h-20"
+              >
+                {current.diagnosa_tindakan?.resume}
+              </textarea>
             </div>
 
             <div className="col-span-2">
               <label>Terapi Obat</label>
-              <textarea disabled className="w-full border rounded p-2 bg-gray-100 h-20">{current.diagnosa_tindakan?.terapi}</textarea>
+              <textarea
+                disabled
+                className="w-full border rounded p-2 bg-gray-100 h-20"
+              >
+                {current.diagnosa_tindakan?.terapi}
+              </textarea>
             </div>
           </div>
         </div>
@@ -246,7 +296,6 @@ export default function DetailBpjs() {
             </p>
           )}
         </div>
-
       </div>
 
       {/* ===================== TOMBOL AKSI ===================== */}
@@ -272,7 +321,6 @@ export default function DetailBpjs() {
       {showApprove && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
           <div className="bg-white rounded-xl shadow-lg p-6 w-[420px] relative">
-
             <button
               className="absolute right-4 top-4 text-gray-500 hover:text-gray-700"
               onClick={() => setShowApprove(false)}
@@ -297,16 +345,19 @@ export default function DetailBpjs() {
               </button>
 
               <button
-                className="flex-1 py-2 rounded bg-teal-600 text-white hover:bg-teal-700"
-                onClick={() => {
-                  updateStatus(current.id, "Diterima");
+                className="flex-1 py-2 rounded bg-teal-600 text-white hover:bg-teal-700 disabled:opacity-50"
+                disabled={isLoading}
+                onClick={async () => {
+                  setIsLoading(true);
+                  await updateStatus(current.id, "Diterima");
+                  setIsLoading(false);
+                  setShowApprove(false);
                   navigate("/dashboard-bpjs");
                 }}
               >
-                Ya, konfirmasi
+                {isLoading ? "Memproses..." : "Ya, konfirmasi"}
               </button>
             </div>
-
           </div>
         </div>
       )}
@@ -315,7 +366,6 @@ export default function DetailBpjs() {
       {showReject && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
           <div className="bg-white rounded-xl shadow-lg p-6 w-[420px] relative">
-
             <button
               className="absolute right-4 top-4 text-gray-500 hover:text-gray-700"
               onClick={() => setShowReject(false)}
@@ -351,17 +401,16 @@ export default function DetailBpjs() {
                     return;
                   }
                   updateStatus(current.id, "Ditolak", rejectReason);
+                  setShowReject(false);
                   navigate("/dashboard-bpjs");
                 }}
               >
                 Kirim Penolakan
               </button>
             </div>
-
           </div>
         </div>
       )}
-
     </div>
   );
 }

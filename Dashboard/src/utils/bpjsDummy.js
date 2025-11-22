@@ -3,20 +3,29 @@ export const bpjsDummy = [
     id: "KLAIM-001",
     pesertaID: "KLAIM-001",
     nama: "Jonathan Siregar",
-    layanan: "J06.9 - Infeksi Saluran Pernapasan Atas",
-    timestamp: "2025-01-24",
+    nik: "1234567890123456",
+    kelas: "Kelas 3",
+    fktp: "FKTP-01012",
+    eligibility: "Eligible - Rawat Jalan",
+    layanan: "J06.9 – Infeksi Saluran Pernapasan Atas",
+    timestamp: "2025-11-22",
     status: "Menunggu",
     alasan: null,
 
-    jenis_layanan: "Pelayanan Rawat Jalan",
-    poli: "Poli Umum",
-    dokter: "dr. Anggun Pratiwi",
-    tanggal_pelayanan: "2025-01-24",
+    informasi_layanan: {
+      jenis_layanan: "Rawat Jalan - Pemeriksaan Umum",
+      poli: "Poli Umum",
+      dokter: "dr. Anggun Pratiwi",
+      tanggal_pelayanan: "2025-01-24",
+    },
 
-    diagnosa_utama: "J06.9",
-    diagnosa_tambahan: "R05 - Batuk",
-    resume: "Batuk sejak 3 hari lalu, pilek, tidak demam.",
-    terapi: "Paracetamol, CTM, Sirup batuk",
+    diagnosa_tindakan: {
+      diagnosa_utama: "K30 - Dyspepsia (Gangguan Pencernaan)",
+      diagnosa_tambahan: "R10.1 - Nyeri Perut Bagian Atas",
+      resume: "nyeri perut sejak 3 hari lalu, pilek, tidak demam.",
+      terapi:
+        " OMEPRAZOLE 20 MG CAPS - 2x1 (Sebelum Makan), ANTASIDA DOEN TAB -3x1 (Kunyah), DOMPERIDONE 10 MG - 3x1 (Jika Mual)",
+    },
 
     riwayat: [
       {
