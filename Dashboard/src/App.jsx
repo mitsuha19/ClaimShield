@@ -7,6 +7,7 @@ import Register from "./pages/Register";
 import Detail from "./pages/Detail";
 import FKTP from "./dashboard/FKTP";
 import BPJS from "./dashboard/BPJS";
+import DetailBpjs from "./pages/DetailBPJS";
 import { AuthProvider } from "./auth/AuthContext";
 import { DataProvider } from "./auth/DataContext";
 
@@ -28,6 +29,7 @@ function App() {
             <Route path="/add" element={<MainLayout><Add /></MainLayout>} />
             <Route path="/edit" element={<MainLayout><Edit /></MainLayout>} />
             <Route path="/detail" element={<MainLayout><Detail /></MainLayout>} />
+            <Route path="/detail-bpjs" element={<MainLayout><DetailBpjs /></MainLayout>} />
 
           </Routes>
         </BrowserRouter>
