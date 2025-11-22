@@ -78,7 +78,7 @@ class _HomePageState extends State<HomePage> {
                 const SizedBox(height: 16),
                 // Code Text
                 Text(
-                  'ASDP-a201XYs7',
+                  'ASDP-as201XoYS7',
                   style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
