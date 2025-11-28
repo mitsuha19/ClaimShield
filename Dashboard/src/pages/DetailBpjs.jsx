@@ -1,101 +1,212 @@
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
-import axios from "axios"; // Import Axios
-import { bpjsDummy } from "../utils/bpjsDummy"; // Asumsi path ke dummy data, sesuaikan jika perlu
+import axios from "axios";
+import { bpjsDummy } from "../utils/bpjsDummy";
+
+const DASHBOARD_API_BASE = "http://localhost:3000/api";
+const BC_API_BASE = "http://localhost:4000/api";
+const DEMO_USER_TOKEN =
+  "deI1J6AqT_qTCabHZwFrrk:APA91bH3Zbz6Huzrsj7HyDzUqlZ_p_2tN8qE3xv4-b9jEJBXlmcuJ-JH7yeQEVvKAhmJyuhskjdHnMw159cwZkpWq4OkhX-haB5KNZVJh98ef3lk5UmRR30";
 
 export default function DetailBpjs() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const id = searchParams.get("id");
 
-  const [current, setCurrent] = useState(null); // State untuk data detail
-  const [list, setList] = useState([]); // Load full list untuk update
-  const [isLoading, setIsLoading] = useState(false); // Loading untuk API call
+  const [claim, setClaim] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
 
   const [showApprove, setShowApprove] = useState(false);
   const [showReject, setShowReject] = useState(false);
   const [rejectReason, setRejectReason] = useState("");
 
-  // Load data dari localStorage (atau sessionStorage jika mau temporary/hilang saat reload)
-  const loadData = () => {
-    const stored = localStorage.getItem("bpjs-data"); // Ganti ke sessionStorage.getItem jika temporary
-    const data = stored ? JSON.parse(stored) : bpjsDummy; // Fallback ke dummy jika belum ada
-    setList(data);
-    const found = data.find((item) => item.id === id);
-    setCurrent(found || null);
-  };
-
+  // Ambil detail klaim dari BE dashboard
   useEffect(() => {
-    loadData();
-  }, [id]);
-
-  // Fungsi untuk call API approve dengan Axios
-  const callApproveAPI = async (claimId) => {
-    try {
-      const response = await axios.post(
-        `http://localhost:4000/api/claims/${claimId}/approve`,
-        {
-          approvedBy: "Dr. Tirta",
-          status: "Approved",
-          userToken:
-            "deI1J6AqT_qTCabHZwFrrk:APA91bH3Zbz6Huzrsj7HyDzUqlZ_p_2tN8qE3xv4-b9jEJBXlmcuJ-JH7yeQEVvKAhmJyuhskjdHnMw159cwZkpWq4OkhX-haB5KNZVJh98ef3lk5UmRR30",
-        }
-      );
-
-      console.log("API Approve success:", response.data); // Log hasil untuk debug
-      return true;
-    } catch (error) {
-      console.error(
-        "API Approve failed:",
-        error.response?.data || error.message
-      );
-      alert("Gagal memanggil API approve. Cek console untuk detail."); // Atau handle lebih baik (e.g., toast)
-      return false;
-    }
-  };
-
-  // Fungsi update status (manual, update localStorage + API untuk approve)
-  // Hanya untuk KLAIM-001 seperti permintaan, tapi bisa dihapus batasan jika perlu
-  const updateStatus = async (targetId, newStatus, alasan = null) => {
-    if (targetId !== "KLAIM-001") {
-      console.warn("Update hanya untuk KLAIM-001 (demo mode)");
+    if (!id) {
+      setError("ID klaim tidak ditemukan di URL.");
+      setLoading(false);
       return;
     }
 
-    const updatedList = list.map((item) =>
-      item.id === targetId
-        ? { ...item, status: newStatus, alasan: alasan }
-        : item
-    );
-
-    localStorage.setItem("bpjs-data", JSON.stringify(updatedList)); // Ganti ke sessionStorage jika temporary
-    setList(updatedList); // Update state untuk konsistensi
-
-    // Update current juga
-    setCurrent((prev) =>
-      prev ? { ...prev, status: newStatus, alasan: alasan } : null
-    );
-
-    // Jika approve, call API
-    if (newStatus === "Diterima") {
-      const apiSuccess = await callApproveAPI(targetId);
-      if (!apiSuccess) {
-        // Optional: Rollback jika API gagal, tapi untuk simple, kita lanjut aja
-        console.warn("API gagal, tapi local update tetap jalan.");
+    const fetchClaim = async () => {
+      try {
+        setLoading(true);
+        const res = await axios.get(`${DASHBOARD_API_BASE}/claims/${id}`);
+        setClaim(res.data?.data || null);
+        setError("");
+      } catch (err) {
+        console.error("Error fetch claim detail BPJS:", err);
+        setError(
+          err.response?.data?.message ||
+            err.message ||
+            "Gagal memuat data klaim"
+        );
+      } finally {
+        setLoading(false);
       }
-    }
-  };
+    };
 
-  if (!current) {
+    fetchClaim();
+  }, [id]);
+
+  if (loading) {
     return (
       <div className="p-6">
         <h1 className="text-2xl font-bold text-teal-700 mb-6">
           Detail Pengajuan
         </h1>
-        <p>Data tidak ditemukan.</p>
+        <p>Memuat data klaim...</p>
       </div>
     );
   }
+
+  if (error || !claim) {
+    return (
+      <div className="p-6">
+        <h1 className="text-2xl font-bold text-teal-700 mb-6">
+          Detail Pengajuan
+        </h1>
+        <p className="text-red-600 mb-4">
+          {error || "Data klaim tidak ditemukan."}
+        </p>
+        <button
+          onClick={() => navigate("/dashboard-bpjs")}
+          className="px-5 py-2 bg-teal-600 text-white rounded-lg shadow hover:bg-teal-700"
+        >
+          Kembali
+        </button>
+      </div>
+    );
+  }
+
+  // ========= JOIN DENGAN DUMMY PESERTA =========
+  // 1) Coba match peserta_id → pesertaID
+  // 2) Coba match claim_code → id
+  // 3) Kalau tetap tidak ada, pakai entry pertama (Jonathan) sebagai dummy peserta
+  const dummy =
+    bpjsDummy.find((d) => d.pesertaID === claim.peserta_id) ||
+    bpjsDummy.find((d) => d.id === claim.claim_code) ||
+    bpjsDummy[0];
+
+  // ====== Mapping field dari DB & dummy ======
+  const statusCode = claim.status || "pending";
+  const statusLabelMap = {
+    pending: "Menunggu",
+    validate: "Tervalidasi",
+    approve: "Disetujui",
+    rejected: "Ditolak",
+  };
+  const statusLabel = statusLabelMap[statusCode] || statusCode;
+
+  const pesertaID = claim.peserta_id || dummy?.pesertaID || "-";
+  const fktpID = claim.fktp_id || dummy?.fktp || "-";
+
+  const tanggalPelayanan =
+    claim.tanggal_pelayanan?.slice(0, 10) ||
+    dummy?.informasi_layanan?.tanggal_pelayanan ||
+    dummy?.timestamp ||
+    "-";
+
+  const jenisLayanan =
+    claim.jenis_layanan ||
+    dummy?.informasi_layanan?.jenis_layanan ||
+    dummy?.layanan ||
+    "Layanan tidak diketahui";
+
+  const poli = claim.poli || dummy?.informasi_layanan?.poli || "-";
+  const dokter =
+    claim.dokter_penanggung_jawab || dummy?.informasi_layanan?.dokter || "-";
+
+  const diagnosaUtama =
+    claim.diagnosa_utama || dummy?.diagnosa_tindakan?.diagnosa_utama || "";
+  const diagnosaTambahan =
+    claim.diagnosa_tambahan ||
+    dummy?.diagnosa_tindakan?.diagnosa_tambahan ||
+    "";
+  const resume = claim.resume_keluhan || dummy?.diagnosa_tindakan?.resume || "";
+  const terapi = claim.terapi_obat || dummy?.diagnosa_tindakan?.terapi || "";
+
+  const nama = dummy?.nama || "—";
+  const nik = dummy?.nik || "—";
+  const kelas = dummy?.kelas || "—";
+  const eligibility = dummy?.eligibility || "—";
+
+  const riwayat = dummy?.riwayat || [];
+  const rekamMedis = dummy?.rekam_medis || [];
+
+  // Hanya bisa approve/reject kalau status = validate (sudah tervalidasi dari BC)
+  const canAct = statusCode === "validate";
+
+  // ====== Approve ke BC + update status DB ======
+  const handleApprove = async () => {
+    if (!claim) return;
+    if (!claim.claim_code) {
+      alert("Claim code tidak ditemukan.");
+      return;
+    }
+
+    setSaving(true);
+    try {
+      // 1) Approve ke Blockchain (pakai claim_code)
+      await axios.post(
+        `${BC_API_BASE}/claims/${encodeURIComponent(claim.claim_code)}/approve`,
+        {
+          approvedBy: "Petugas BPJS",
+          status: "Approved",
+          userToken: DEMO_USER_TOKEN,
+        }
+      );
+
+      // 2) Update status di DB → approve
+      await axios.patch(`${DASHBOARD_API_BASE}/claims/${id}/status`, {
+        status: "approve",
+      });
+
+      setClaim((prev) => (prev ? { ...prev, status: "approve" } : prev));
+      setShowApprove(false);
+      alert("Klaim berhasil disetujui ✅");
+      navigate("/dashboard-bpjs");
+    } catch (err) {
+      console.error("API Approve failed:", err.response?.data || err.message);
+      alert(
+        "Gagal menyetujui klaim: " +
+          (err.response?.data?.message || err.message)
+      );
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  // ====== Reject klaim (update status di DB) ======
+  const handleReject = async () => {
+    if (!rejectReason.trim()) {
+      alert("Alasan penolakan wajib diisi.");
+      return;
+    }
+    if (!claim) return;
+
+    setSaving(true);
+    try {
+      await axios.patch(`${DASHBOARD_API_BASE}/claims/${id}/status`, {
+        status: "rejected",
+        // kalau backend nanti support alasan, bisa tambahkan field di sini
+      });
+
+      setClaim((prev) => (prev ? { ...prev, status: "rejected" } : prev));
+      setShowReject(false);
+      alert("Klaim berhasil ditolak.");
+      navigate("/dashboard-bpjs");
+    } catch (err) {
+      console.error("API Reject failed:", err.response?.data || err.message);
+      alert(
+        "Gagal menolak klaim: " + (err.response?.data?.message || err.message)
+      );
+    } finally {
+      setSaving(false);
+    }
+  };
 
   return (
     <div className="p-6 overflow-x-hidden ">
@@ -104,8 +215,9 @@ export default function DetailBpjs() {
       </h1>
 
       <p className="text-sm text-gray-600 mb-6">
-        ID Klaim: <b>{current.id}</b> · Peserta ID: <b>{current.pesertaID}</b> ·
-        FKTP: <b>{current.fktp}</b> · Tanggal: <b>{current.timestamp}</b>
+        ID Klaim: <b>{claim.claim_code || id}</b> · Peserta ID:{" "}
+        <b>{pesertaID}</b> · FKTP: <b>{fktpID}</b> · Tanggal:{" "}
+        <b>{tanggalPelayanan}</b>
       </p>
 
       {/* ===================== DATA PESERTA ===================== */}
@@ -114,36 +226,30 @@ export default function DetailBpjs() {
 
         <div className="space-y-1 text-sm">
           <div>
-            <b>Nama:</b> {current.nama}
+            <b>Nama:</b> {nama}
           </div>
           <div>
-            <b>NIK:</b> {current.nik}
+            <b>NIK:</b> {nik}
           </div>
           <div>
-            <b>Kelas Rawat:</b> {current.kelas}
+            <b>Kelas Rawat:</b> {kelas}
           </div>
           <div>
-            <b>Eligibility:</b> {current.eligibility}
+            <b>Eligibility:</b> {eligibility}
           </div>
           <div>
-            <b>Status:</b> {current.status || "Menunggu"}
+            <b>Status Klaim:</b> {statusLabel}
           </div>
-
-          {current.alasan && (
-            <div className="text-red-600">
-              <b>Alasan Penolakan:</b> {current.alasan}
-            </div>
-          )}
         </div>
       </div>
 
-      {/* ===================== RIWAYAT LAYANAN ===================== */}
-      {current.riwayat && (
+      {/* ===================== RIWAYAT LAYANAN (DUMMY) ===================== */}
+      {riwayat.length > 0 && (
         <div className="bg-gray-50 shadow rounded-lg p-5 mb-6">
           <p className="font-semibold mb-3">Riwayat Layanan :</p>
 
           <div className="grid grid-cols-1 gap-4 text-sm">
-            {current.riwayat.map((r, idx) => (
+            {riwayat.map((r, idx) => (
               <div key={idx} className="border-b pb-3">
                 <p className="font-medium">
                   {r.fasilitas} ({r.tanggal})
@@ -163,13 +269,13 @@ export default function DetailBpjs() {
         </div>
       )}
 
-      {/* ===================== REKAM MEDIS ===================== */}
-      {current.rekam_medis && (
+      {/* ===================== REKAM MEDIS (DUMMY) ===================== */}
+      {rekamMedis.length > 0 && (
         <div className="bg-gray-50 shadow rounded-lg p-5 mb-6">
           <p className="font-semibold mb-3">Riwayat Rekam Medis :</p>
 
           <div className="grid grid-cols-1 gap-4 text-sm">
-            {current.rekam_medis.map((r, idx) => (
+            {rekamMedis.map((r, idx) => (
               <div key={idx} className="border-b pb-3">
                 <p className="font-medium">
                   {r.fasilitas} ({r.tanggal})
@@ -197,34 +303,34 @@ export default function DetailBpjs() {
 
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div>
-              <label>Jenis Layanan</label>
+              <label className="font-medium">Jenis Layanan</label>
               <input
                 disabled
-                value={current.informasi_layanan?.jenis_layanan || ""}
+                value={jenisLayanan}
                 className="w-full border rounded p-2 bg-gray-100"
               />
             </div>
             <div>
-              <label>Poli</label>
+              <label className="font-medium">Poli</label>
               <input
                 disabled
-                value={current.informasi_layanan?.poli || ""}
+                value={poli}
                 className="w-full border rounded p-2 bg-gray-100"
               />
             </div>
             <div>
-              <label>Dokter</label>
+              <label className="font-medium">Dokter</label>
               <input
                 disabled
-                value={current.informasi_layanan?.dokter || ""}
+                value={dokter}
                 className="w-full border rounded p-2 bg-gray-100"
               />
             </div>
             <div>
-              <label>Tanggal Pelayanan</label>
+              <label className="font-medium">Tanggal Pelayanan</label>
               <input
                 disabled
-                value={current.informasi_layanan?.tanggal_pelayanan || ""}
+                value={tanggalPelayanan}
                 className="w-full border rounded p-2 bg-gray-100"
               />
             </div>
@@ -237,40 +343,38 @@ export default function DetailBpjs() {
 
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div>
-              <label>Diagnosa Utama</label>
+              <label className="font-medium">Diagnosa Utama</label>
               <input
                 disabled
-                value={current.diagnosa_tindakan?.diagnosa_utama || ""}
+                value={diagnosaUtama}
                 className="w-full border rounded p-2 bg-gray-100"
               />
             </div>
             <div>
-              <label>Diagnosa Tambahan</label>
+              <label className="font-medium">Diagnosa Tambahan</label>
               <input
                 disabled
-                value={current.diagnosa_tindakan?.diagnosa_tambahan || ""}
+                value={diagnosaTambahan}
                 className="w-full border rounded p-2 bg-gray-100"
               />
             </div>
 
             <div className="col-span-2">
-              <label>Resume</label>
+              <label className="font-medium">Resume</label>
               <textarea
                 disabled
                 className="w-full border rounded p-2 bg-gray-100 h-20"
-              >
-                {current.diagnosa_tindakan?.resume}
-              </textarea>
+                value={resume}
+              />
             </div>
 
             <div className="col-span-2">
-              <label>Terapi Obat</label>
+              <label className="font-medium">Terapi Obat</label>
               <textarea
                 disabled
                 className="w-full border rounded p-2 bg-gray-100 h-20"
-              >
-                {current.diagnosa_tindakan?.terapi}
-              </textarea>
+                value={terapi}
+              />
             </div>
           </div>
         </div>
@@ -280,26 +384,20 @@ export default function DetailBpjs() {
           <h2 className="text-lg font-semibold mb-4">Status</h2>
           <div
             className={`p-3 rounded text-center font-semibold ${
-              current.status === "Diterima"
+              statusCode === "approve"
                 ? "bg-green-100 text-green-700"
-                : current.status === "Ditolak"
+                : statusCode === "rejected"
                 ? "bg-red-100 text-red-700"
                 : "bg-gray-100 text-teal-600"
             }`}
           >
-            {current.status}
+            {statusLabel}
           </div>
-
-          {current.alasan && (
-            <p className="text-red-600 mt-2 text-sm">
-              <b>Alasan:</b> {current.alasan}
-            </p>
-          )}
         </div>
       </div>
 
-      {/* ===================== TOMBOL AKSI ===================== */}
-      {current.status === "Menunggu" && (
+      {/* ===================== TOMBOL AKSI (APPROVE / REJECT) ===================== */}
+      {canAct && (
         <div className="flex justify-end gap-3 mt-6">
           <button
             className="px-5 py-2 bg-red-500 text-white rounded-lg shadow hover:bg-red-600"
@@ -333,7 +431,7 @@ export default function DetailBpjs() {
             </h2>
 
             <p className="text-gray-500 text-sm text-center mt-2">
-              Menerima Pengajuan akan permanen dan tidak bisa dibatalkan.
+              Menerima pengajuan akan permanen dan tidak bisa dibatalkan.
             </p>
 
             <div className="flex gap-3 mt-6">
@@ -346,16 +444,10 @@ export default function DetailBpjs() {
 
               <button
                 className="flex-1 py-2 rounded bg-teal-600 text-white hover:bg-teal-700 disabled:opacity-50"
-                disabled={isLoading}
-                onClick={async () => {
-                  setIsLoading(true);
-                  await updateStatus(current.id, "Diterima");
-                  setIsLoading(false);
-                  setShowApprove(false);
-                  navigate("/dashboard-bpjs");
-                }}
+                disabled={saving}
+                onClick={handleApprove}
               >
-                {isLoading ? "Memproses..." : "Ya, konfirmasi"}
+                {saving ? "Memproses..." : "Ya, konfirmasi"}
               </button>
             </div>
           </div>
@@ -380,7 +472,7 @@ export default function DetailBpjs() {
             <textarea
               className="w-full mt-4 p-3 border rounded bg-gray-100"
               rows="3"
-              placeholder="Layanan Pasien tidak sesuai dengan keluhan pasien"
+              placeholder="Layanan pasien tidak sesuai dengan keluhan pasien"
               value={rejectReason}
               onChange={(e) => setRejectReason(e.target.value)}
             />
@@ -394,16 +486,9 @@ export default function DetailBpjs() {
               </button>
 
               <button
-                className="flex-1 py-2 rounded bg-teal-600 text-white hover:bg-teal-700"
-                onClick={() => {
-                  if (!rejectReason.trim()) {
-                    alert("Alasan wajib diisi.");
-                    return;
-                  }
-                  updateStatus(current.id, "Ditolak", rejectReason);
-                  setShowReject(false);
-                  navigate("/dashboard-bpjs");
-                }}
+                className="flex-1 py-2 rounded bg-teal-600 text-white hover:bg-teal-700 disabled:opacity-50"
+                disabled={saving}
+                onClick={handleReject}
               >
                 Kirim Penolakan
               </button>

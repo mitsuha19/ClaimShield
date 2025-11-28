@@ -13,11 +13,14 @@ app.use(express.json());
 const indexRoutes = require("./routes/index");
 const userRoutes = require("./routes/user");
 const notificationRoutes = require("./routes/notification");
-const claimRoutes = require("./routes/claim");
+const claimRoutes = require("./routes/claimRoutes");
+const mismatchReportRoutes = require("./routes/claimMismatchReportRoutes");
+
 app.use("/", indexRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api", notificationRoutes);
 app.use("/api", claimRoutes);
+app.use("/api", mismatchReportRoutes);
 
 const PORT = process.env.PORT || 3000;
 sequelize
