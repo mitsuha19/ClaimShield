@@ -1,6 +1,11 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 
-// Dummy data untuk detail klaim (bisa diganti dengan data real dari API berdasarkan claimId)
+// Ubah sesuai alamat server Node (dashboard) kamu
+// Kalau dari emulator Android ke laptop: pakai 10.0.2.2
+const String API_BASE_URL = 'http://10.0.2.2:3000/api';
+
 class ClaimDetailData {
   final String claimId;
   final String serviceDate;
@@ -88,7 +93,7 @@ class ClaimDetailPage extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 12),
-            _buildInfoCard('ID Claim', 'KLAIM-001', Icons.description),
+            _buildInfoCard('ID Claim', detail.claimId, Icons.description),
             _buildInfoCard(
               'Tanggal Pelayanan',
               detail.serviceDate,
@@ -160,15 +165,67 @@ class ClaimDetailPage extends StatelessWidget {
     );
   }
 
+  // ================== KIRIM LAPORAN KE BACKEND ==================
+
+  Future<void> _submitReport(
+    BuildContext context,
+    String claimId,
+    String reason,
+  ) async {
+    try {
+      final uri = Uri.parse('$API_BASE_URL/claims/$claimId/report-not-me');
+
+      final body = {
+        'peserta_id': 'P-002',
+        'device_token': 'MOBILE_DEMO_TOKEN',
+        'device_info': 'Flutter Android - v1.0.0',
+        'notes': reason,
+        'requested_action': 'INVESTIGATE',
+        // 'message_id': 'optional-message-id-fcm',
+      };
+
+      final resp = await http.post(
+        uri,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode(body),
+      );
+
+      if (resp.statusCode >= 200 && resp.statusCode < 300) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Laporan klaim berhasil dikirim.'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      } else {
+        debugPrint('Report error: ${resp.statusCode} ${resp.body}');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Gagal mengirim laporan (${resp.statusCode}).'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      debugPrint('Exception saat kirim report: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Terjadi kesalahan saat mengirim laporan.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
   void _showReportDialog(BuildContext context, String claimId) {
-    final TextEditingController _controller = TextEditingController(
+    final TextEditingController controller = TextEditingController(
       text:
           'Saya tidak melakukan pemeriksaan/pergi ke Klinik Sehat Medika pada tanggal tersebut, dan saya tidak ada pergi ke RS maupun klinik',
     );
 
     showDialog(
       context: context,
-      builder: (BuildContext context) {
+      builder: (BuildContext dialogContext) {
         return AlertDialog(
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
@@ -182,22 +239,22 @@ class ClaimDetailPage extends StatelessWidget {
             ),
           ),
           content: TextField(
-            controller: _controller,
+            controller: controller,
             maxLines: 3,
             decoration: InputDecoration(
               hintText:
                   'Saya tidak melakukan pemeriksaan/pergi ke Klinik Sehat Medika pada tanggal tersebut, dan saya tidak ada pergi ke RS maupun klinik',
-              hintStyle: TextStyle(color: Colors.grey, fontSize: 14),
+              hintStyle: const TextStyle(color: Colors.grey, fontSize: 14),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8),
               ),
-              contentPadding: EdgeInsets.all(12),
+              contentPadding: const EdgeInsets.all(12),
             ),
           ),
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.of(context).pop();
+                Navigator.of(dialogContext).pop();
               },
               style: TextButton.styleFrom(
                 backgroundColor: Colors.red.withOpacity(0.1),
@@ -217,15 +274,23 @@ class ClaimDetailPage extends StatelessWidget {
             ),
             const SizedBox(width: 8),
             ElevatedButton(
-              onPressed: () {
-                // TODO: Kirim laporan ke server dengan _controller.text dan claimId
-                Navigator.of(context).pop();
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Laporan klaim berhasil dikirim!'),
-                    backgroundColor: Colors.green,
-                  ),
-                );
+              onPressed: () async {
+                final reason = controller.text.trim();
+                if (reason.isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Alasan pelaporan wajib diisi.'),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                  return;
+                }
+
+                // Tutup dialog dulu
+                Navigator.of(dialogContext).pop();
+
+                // Kirim ke backend
+                await _submitReport(context, claimId, reason);
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.blue,
@@ -248,6 +313,8 @@ class ClaimDetailPage extends StatelessWidget {
       },
     );
   }
+
+  // ================== UI HELPERS ==================
 
   Widget _buildInfoCard(String label, String value, IconData icon) {
     return Card(
